@@ -19,11 +19,12 @@ function YourBookings() {
   const [orderDetails, setOrderDetails] = useState([]);
 
   const transformOrderData = (orderData) => {
-    const { slices, passengers, total_amount, offer_id, owner } = orderData.data;
-  
+    const { slices, passengers, total_amount, offer_id, owner } =
+      orderData.data;
+
     const airlineLogo = owner.logo_symbol_url;
     const airlineName = owner.name;
-  
+
     const segments = slices.flatMap((slice) =>
       slice.segments.map((segment) => ({
         departureTime: formatTime(segment.departing_at),
@@ -34,27 +35,32 @@ function YourBookings() {
         destination: segment.destination.iata_code,
         departureAirport: segment.origin.name,
         arrivalAirport: segment.destination.name,
-        cabinClass: segment.passengers[0]?.cabin_class_marketing_name || "Economy",
+        cabinClass:
+          segment.passengers[0]?.cabin_class_marketing_name || "Economy",
         duration: formatDuration(segment.duration),
       }))
     );
-  
+
     const formattedPassengers = passengers.map((passenger) => ({
       passengerId: passenger.id,
       type: passenger.type,
       age: passenger.type === "child" ? passenger.age : null,
     }));
-  
+
     const baggage = slices.flatMap((slice) =>
       slice.segments.flatMap((segment) =>
         segment.passengers.map((passenger) => ({
           passengerId: passenger.passenger_id,
-          checkedBags: passenger.baggages.find((bag) => bag.type === "checked")?.quantity || 0,
-          carryOnBags: passenger.baggages.find((bag) => bag.type === "carry_on")?.quantity || 0,
+          checkedBags:
+            passenger.baggages.find((bag) => bag.type === "checked")
+              ?.quantity || 0,
+          carryOnBags:
+            passenger.baggages.find((bag) => bag.type === "carry_on")
+              ?.quantity || 0,
         }))
       )
     );
-  
+
     return {
       airlineLogo,
       airlineName,
@@ -65,7 +71,7 @@ function YourBookings() {
       baggage,
     };
   };
-  
+
   const formatTime = (dateTimeString) => {
     if (!dateTimeString) return "N/A";
     const date = new Date(dateTimeString);
@@ -73,13 +79,13 @@ function YourBookings() {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${hours}:${minutes}`;
   };
-  
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = { year: "numeric", month: "short", day: "numeric" };
     return date.toLocaleDateString("en-US", options);
   };
-  
+
   const formatDuration = (duration) => {
     const regex = /PT(\d+)H(\d+)M/;
     const match = duration.match(regex);
@@ -109,12 +115,14 @@ function YourBookings() {
       setLoadingMessage("Fetching your bookings...");
       setError(null);
 
-      const response = await axios.get(`https://vercel-deployment-server-wine.vercel.app/bookings/${username}`);
-      
+      const response = await axios.get(
+        `http://localhost:5000/api/bookings/${username}`
+      );
+
       if (response.status === 200) {
         const orders = response.data.orders || [];
         setOrderIDs(orders);
-        
+
         if (orders.length === 0) {
           setLoading(false);
           return;
@@ -124,7 +132,7 @@ function YourBookings() {
         await fetchAllOrderDetails(orders);
       }
     } catch (error) {
-    //   setError("Failed to fetch your bookings. Please try again later.");
+      //   setError("Failed to fetch your bookings. Please try again later.");
       console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
@@ -134,14 +142,14 @@ function YourBookings() {
   const fetchOrderDetails = async (orderId) => {
     if (!orderId) return null;
 
-    const url = `https://vercel-deployment-server-wine.vercel.app/api/air/orders/${orderId}`;
+    const url = `http://localhost:5000/api/orders/fetch-order/${orderId}`;
 
     try {
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Duffel-Version": "v2",
-          "Authorization": `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
       });
 
@@ -158,19 +166,19 @@ function YourBookings() {
 
   const fetchAllOrderDetails = async (orderIds) => {
     setLoadingMessage("Fetching order details...");
-    
+
     try {
       const details = await Promise.all(
-        orderIds.map(orderId => fetchOrderDetails(orderId))
+        orderIds.map((orderId) => fetchOrderDetails(orderId))
       );
 
       const transformedDetails = details
-        .filter(detail => detail !== null)
-        .map(detail => transformOrderData(detail));
+        .filter((detail) => detail !== null)
+        .map((detail) => transformOrderData(detail));
 
       setOrderDetails(transformedDetails);
     } catch (error) {
-    //   setError("Failed to fetch order details. Please try again later.");
+      //   setError("Failed to fetch order details. Please try again later.");
       console.error("Error fetching order details:", error);
     }
   };
@@ -204,7 +212,9 @@ function YourBookings() {
 
       <div className="passenger-formsdx">
         <h1>My Bookings</h1>
-        {showModal && <MessageModal message={message} onClose={handleCloseModal} />}
+        {showModal && (
+          <MessageModal message={message} onClose={handleCloseModal} />
+        )}
       </div>
 
       {error && (
@@ -217,21 +227,26 @@ function YourBookings() {
         {!loading && orderDetails.length === 0 ? (
           <div className="no-bookings-message">
             <h2>No Bookings Found</h2>
-            <p>You haven't made any bookings yet. Start your journey by searching for flights!</p>
+            <p>
+              You haven't made any bookings yet. Start your journey by searching
+              for flights!
+            </p>
           </div>
         ) : (
-          orderDetails.reverse().map((order, index) => (
-            <SFlightCard
-              key={index}
-              airlineLogo={order.airlineLogo}
-              airlineName={order.airlineName}
-              segments={order.segments}
-              price={order.price}
-              offerId={order.offerId}
-              passengers={order.passengers}
-              baggage={order.baggage}
-            />
-          ))
+          orderDetails
+            .reverse()
+            .map((order, index) => (
+              <SFlightCard
+                key={index}
+                airlineLogo={order.airlineLogo}
+                airlineName={order.airlineName}
+                segments={order.segments}
+                price={order.price}
+                offerId={order.offerId}
+                passengers={order.passengers}
+                baggage={order.baggage}
+              />
+            ))
         )}
       </div>
     </div>

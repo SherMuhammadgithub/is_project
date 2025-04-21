@@ -1,5 +1,10 @@
 const express = require("express");
-const { getFlightOffers } = require("../controller/flightController");
+const {
+  getFlightOffers,
+  fetchFromDuffelAPI,
+  fetchAirports,
+  getFlightOfferById,
+} = require("../controller/flightController");
 
 const flightRouter = express.Router();
 
@@ -10,5 +15,7 @@ flightRouter.get("/test", (req, res) => {
 
 // Flight routes
 flightRouter.post("/get-flight-offers", getFlightOffers);
+flightRouter.get("/airports", fetchAirports);
+flightRouter.get("/get-flight-offers/:id", getFlightOfferById);
 
 module.exports = flightRouter;

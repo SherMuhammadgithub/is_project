@@ -8,6 +8,7 @@ require("dotenv").config();
 const userRouter = require("./router/userRouter");
 const bookingRouter = require("./router/bookingRouter");
 const flightRouter = require("./router/flightRouter");
+const orderRouter = require("./router/orderRoute"); // Import order router
 
 const app = express();
 
@@ -42,6 +43,9 @@ app.use("/api/bookings", bookingRouter);
 
 // Flight routes
 app.use("/api/flights", flightRouter);
+
+// Order routes
+app.use("/api/orders", orderRouter); // Use the order router
 
 // Proxy middleware for Duffel API
 app.use(

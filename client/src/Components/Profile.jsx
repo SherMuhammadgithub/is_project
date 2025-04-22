@@ -27,7 +27,7 @@ const ProfileComponent = () => {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3 className="modal-title">Welcome, {username}</h3>
+          <h3 className="modal-title">Welcome, <span dangerouslySetInnerHTML={{ __html: username }}></span></h3>
             <button className="logout-btn" onClick={handleLogout}>
               Logout
             </button>

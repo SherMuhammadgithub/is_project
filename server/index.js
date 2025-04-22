@@ -3,6 +3,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 require("dotenv").config();
+const rateLimit = require("express-rate-limit");
+
+const bannedIPs = new Map(); 
 
 // Import routes
 const userRouter = require("./router/userRouter");
@@ -11,6 +14,39 @@ const flightRouter = require("./router/flightRouter");
 const orderRouter = require("./router/orderRoute"); // Import order router
 
 const app = express();
+app.use((req, res, next) => {
+  const ip = req.ip;
+  const unblockTime = bannedIPs.get(ip);
+  if (unblockTime && unblockTime > Date.now()) {
+    console.log(`Blocked IP ${ip} attempted access to ${req.url}`);
+    return res.status(429).json({
+      error: "Too many requests. You have been temporarily blocked for 1 minute.",
+    });
+  }
+  next();
+});
+
+const APIlimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,           
+  handler: (req, res, next) => {
+    const ip = req.ip;
+    bannedIPs.set(ip, Date.now() + 60 * 1000); 
+    console.log(`IP ${ip} has been temporarily blocked for 1 minute.`);
+    res.status(429).json({
+      error: "Too many requests. You have been temporarily blocked for 1 minute.",
+    });
+  },
+});
+
+
+
+
+// Add logging first, before ANYTHING else
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.ip} - ${req.method} ${req.url}`);
+  next();
+});
 
 // CORS Configuration - Must be before other middleware
 const corsOptions = {
@@ -24,6 +60,8 @@ const corsOptions = {
   maxAge: 86400, // Enable CORS preflight cache for 24 hours
 };
 
+
+
 // Apply CORS middleware before routes
 app.use(cors(corsOptions));
 
@@ -36,16 +74,16 @@ app.get("/", (req, res) => {
 });
 
 // User routes
-app.use("/api/users", userRouter);
+app.use("/api/users",APIlimiter, userRouter);
 
 // Booking routes
-app.use("/api/bookings", bookingRouter);
+app.use("/api/bookings",bookingRouter);
 
 // Flight routes
-app.use("/api/flights", flightRouter);
+app.use("/api/flights",flightRouter);
 
 // Order routes
-app.use("/api/orders", orderRouter); // Use the order router
+app.use("/api/orders",orderRouter); // Use the order router
 
 // Proxy middleware for Duffel API
 app.use(

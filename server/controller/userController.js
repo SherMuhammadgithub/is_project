@@ -9,7 +9,7 @@ const cleanInput = (input) => {
   return sanitize(input, {
     ALLOWED_TAGS: [], 
     ALLOWED_ATTR: [], 
-    FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed'],
+    FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed','h1','div','span'],
     FORBID_ATTR: ['onerror', 'onload', 'onclick']
   });
 };

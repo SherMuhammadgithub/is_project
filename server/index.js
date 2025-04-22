@@ -4,6 +4,18 @@ const cors = require("cors");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 require("dotenv").config();
 const rateLimit = require("express-rate-limit");
+const geoip = require('geoip-lite');
+
+function blockIsrael(req, res, next) {
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const geo = geoip.lookup(ip);
+
+  if (geo && geo.country === 'IL') {
+    return res.status(403).json({ error: 'Access from Israel is blocked.' });
+  }
+
+  next();
+}
 
 const bannedIPs = new Map(); 
 
@@ -14,6 +26,7 @@ const flightRouter = require("./router/flightRouter");
 const orderRouter = require("./router/orderRoute"); // Import order router
 
 const app = express();
+app.use(blockIsrael);
 app.use((req, res, next) => {
   const ip = req.ip;
   const unblockTime = bannedIPs.get(ip);

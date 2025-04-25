@@ -1,5 +1,7 @@
 const pool = require("../db/db.js"); // Fix the path to the database connection
 const axios = require("axios");
+const jwt = require("jsonwebtoken");
+const { generateToken } = require("../utils/jwtUtils.js");
 
 // Signup Endpoint
 const signUpUser = (req, res) => {
@@ -12,11 +14,16 @@ const signUpUser = (req, res) => {
       res.status(409).json({ error: "Username already exists." });
     } else {
       const insertQuery =
-        "INSERT INTO Users (username, userpassword) VALUES ($1, $2)";
-      pool.query(insertQuery, [username, password], (err) => {
+        "INSERT INTO Users (username, userpassword) VALUES ($1, $2) RETURNING id, username";
+      pool.query(insertQuery, [username, password], (err, results) => {
         if (err)
           return res.status(500).json({ error: "Error inserting user data" });
-        res.status(200).json({ message: "Signup successful!" });
+
+        const { id, username } = results.rows[0];
+
+        // Generate token after successful signup
+        const token = generateToken({ id, username });
+        res.status(200).json({ message: "Signup successful!", token });
       });
     }
   });
@@ -30,7 +37,11 @@ const loginUser = (req, res) => {
     if (err) return res.status(500).json({ error: "Error fetching user data" });
 
     if (results.rows.length > 0) {
-      res.status(200).json({ message: "Login successful!", user: results.rows[0] });
+      const { id, username } = results.rows[0];
+
+      // Generate token after successful login
+      const token = generateToken({ id, username });
+      res.status(200).json({ message: "Login successful!", token });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
     }
@@ -39,5 +50,5 @@ const loginUser = (req, res) => {
 
 module.exports = {
   signUpUser,
-  loginUser
+  loginUser,
 };

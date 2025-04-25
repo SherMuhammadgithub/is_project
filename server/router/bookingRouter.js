@@ -3,6 +3,7 @@ const {
   getUserBookings,
   createBooking,
 } = require("../controller/bookingController");
+const authMiddleware = require("../utils/authMiddleware");
 
 const bookingRouter = express.Router();
 
@@ -12,7 +13,7 @@ bookingRouter.get("/test", (req, res) => {
 });
 
 // Booking routes
-bookingRouter.get("/:username", getUserBookings);
-bookingRouter.post("/", createBooking);
+bookingRouter.get("/:username", authMiddleware, getUserBookings);
+bookingRouter.post("/", authMiddleware, createBooking);
 
 module.exports = bookingRouter;

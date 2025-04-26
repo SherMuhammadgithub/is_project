@@ -39,32 +39,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// const APIlimiter = rateLimit({
-//   windowMs: 60 * 1000,
-//   max: 5,           
-//   handler: (req, res, next) => {
-//     const ip = req.ip;
-//     bannedIPs.set(ip, Date.now() + 60 * 1000); 
-//     console.log(`IP ${ip} has been temporarily blocked for 1 minute.`);
-//     res.status(429).json({
-//       error: "Too many requests. You have been temporarily blocked for 1 minute.",
-//     });
-//   },
-// });
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 15, 
-
+const APIlimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,           
   handler: (req, res, next) => {
     const ip = req.ip;
-    bannedIPs.set(ip, Date.now() + 300 * 1000); 
+    bannedIPs.set(ip, Date.now() + 60 * 1000); 
     console.log(`IP ${ip} has been temporarily blocked for 1 minute.`);
     res.status(429).json({
-      error: "Too many login attempts, please try again later",
+      error: "Too many requests. You have been temporarily blocked for 1 minute.",
     });
   },
 });
+
+// const loginLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, 
+//   max: 15, 
+
+//   handler: (req, res, next) => {
+//     const ip = req.ip;
+//     bannedIPs.set(ip, Date.now() + 300 * 1000); 
+//     console.log(`IP ${ip} has been temporarily blocked for 1 minute.`);
+//     res.status(429).json({
+//       error: "Too many login attempts, please try again later",
+//     });
+//   },
+// });
 
 
 // Add logging first, before ANYTHING else
@@ -99,8 +99,8 @@ app.get("/", (req, res) => {
 });
 
 // User routes
-// app.use("/api/users",APIlimiter, userRouter);
-app.use("/api/users",loginLimiter, userRouter);
+app.use("/api/users",APIlimiter, userRouter);
+// app.use("/api/users",loginLimiter, userRouter);
 
 // Booking routes
 app.use("/api/bookings",bookingRouter);

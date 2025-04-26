@@ -1,6 +1,4 @@
-# **Information Security Project: Web Application Vulnerability Assessment & Mitigation**  
-**Author:** [Your Name]  
-**Date:** [Project Completion Date]  
+# **Information Security Project: Web Application Vulnerability Assessment & Mitigation**   
 
 ## **📌 Project Overview**  
 This project involves identifying, exploiting, and mitigating security vulnerabilities in a self-developed web application. The goal was to simulate real-world attacks, implement security fixes, and validate their effectiveness.  
@@ -8,8 +6,8 @@ This project involves identifying, exploiting, and mitigating security vulnerabi
 ---
 
 ## **🔧 Technologies Used**  
-- **Backend:** [Node.js]  
-- **Frontend:** [React]  
+- **Backend:** Node.js
+- **Frontend:** React 
 - **Security Tools:**  
   - CSRF Tokens  
   - Feistel Cipher (Password Encryption)  
@@ -51,5 +49,3 @@ This project involves identifying, exploiting, and mitigating security vulnerabi
    - Encrypted passwords using **Feistel Cipher**.  
 
 ---
-
-## **📂 Project Structure**  

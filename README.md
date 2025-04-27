@@ -2,7 +2,6 @@
 
 ## **📌 Project Overview**  
 This project involves identifying, exploiting, and mitigating security vulnerabilities in a self-developed web application. The goal was to simulate real-world attacks, implement security fixes, and validate their effectiveness.  
-
 ---
 
 ## **🔧 Technologies Used**  

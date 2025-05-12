@@ -114,25 +114,30 @@ function YourBookings() {
       setLoading(true);
       setLoadingMessage("Fetching your bookings...");
       setError(null);
-
-      const response = await axios.get(
-        `http://localhost:5000/api/bookings/${username}`
-      );
-
-      if (response.status === 200) {
-        const orders = response.data.orders || [];
-        setOrderIDs(orders);
-
-        if (orders.length === 0) {
-          setLoading(false);
-          return;
-        }
-
-        // Fetch order details immediately after getting order IDs
-        await fetchAllOrderDetails(orders);
+  
+      const response = await fetch(`http://localhost:5000/api/bookings/${username}`, {
+        method: "GET",
+        credentials: "include", // Include cookies in the request
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${await response.text()}`);
       }
+  
+      // Get the JSON data from the response
+      const data = await response.json();
+      const orders = data.orders || [];
+      setOrderIDs(orders);
+  
+      if (orders.length === 0) {
+        setLoading(false);
+        return;
+      }
+  
+      // Fetch order details immediately after getting order IDs
+      await fetchAllOrderDetails(orders);
     } catch (error) {
-      //   setError("Failed to fetch your bookings. Please try again later.");
+      setError("Failed to fetch your bookings. Please try again later.");
       console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);

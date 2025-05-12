@@ -3,79 +3,18 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 require("dotenv").config();
-const rateLimit = require("express-rate-limit");
-const geoip = require("geoip-lite");
 
-function blockIsrael(req, res, next) {
-  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  const geo = geoip.lookup(ip);
-
-  if (geo && geo.country === "IL") {
-    return res.status(403).json({ error: "Access from Israel is blocked." });
-  }
-
-  next();
-}
-
-const bannedIPs = new Map();
 
 // Import routes
 const userRouter = require("./router/userRouter");
 const bookingRouter = require("./router/bookingRouter");
 const flightRouter = require("./router/flightRouter");
 const orderRouter = require("./router/orderRoute"); // Import order router
-const cookieParser = require("cookie-parser");
 
 const app = express();
 
-
-app.use(blockIsrael);
 app.use((req, res, next) => {
-  const ip = req.ip;
-  const unblockTime = bannedIPs.get(ip);
-  if (unblockTime && unblockTime > Date.now()) {
-    console.log(`Blocked IP ${ip} attempted access to ${req.url}`);
-    return res.status(429).json({
-      error:
-        "Too many requests. You have been temporarily blocked for some minute.",
-    });
-  }
-  next();
-});
-
-const APIlimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,           
-  handler: (req, res, next) => {
-    const ip = req.ip;
-    bannedIPs.set(ip, Date.now() + 60 * 1000); 
-    console.log(`IP ${ip} has been temporarily blocked for 1 minute.`);
-    res.status(429).json({
-      error: "Too many requests. You have been temporarily blocked for 1 minute.",
-    });
-  },
-});
-
-// const loginLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, 
-//   max: 15, 
-
-//   handler: (req, res, next) => {
-//     const ip = req.ip;
-//     bannedIPs.set(ip, Date.now() + 300 * 1000); 
-//     console.log(`IP ${ip} has been temporarily blocked for 1 minute.`);
-//     res.status(429).json({
-//       error: "Too many login attempts, please try again later",
-//     });
-//   },
-// });
-
-
-// Add logging first, before ANYTHING else
-app.use((req, res, next) => {
-  console.log(
-    `[${new Date().toISOString()}] ${req.ip} - ${req.method} ${req.url}`
-  );
+  console.log(`[${new Date().toISOString()}] ${req.ip} - ${req.method} ${req.url}`);
   next();
 });
 
@@ -105,17 +44,16 @@ app.get("/", (req, res) => {
 });
 
 // User routes
-app.use("/api/users",APIlimiter, userRouter);
-// app.use("/api/users",loginLimiter, userRouter);
+app.use("/api/users",userRouter);
 
 // Booking routes
-app.use("/api/bookings", bookingRouter);
+app.use("/api/bookings",bookingRouter);
 
 // Flight routes
-app.use("/api/flights", flightRouter);
+app.use("/api/flights",flightRouter);
 
 // Order routes
-app.use("/api/orders", orderRouter); // Use the order router
+app.use("/api/orders",orderRouter); // Use the order router
 
 // Proxy middleware for Duffel API
 app.use(
